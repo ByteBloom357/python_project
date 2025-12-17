@@ -7,7 +7,7 @@ from collections import Counter
 from data import PATHS, NPC_POOL, QUESTS, RANDOM_EVENTS, CHANCE_OF_KIDNAPPING
 
 # --------------------------------------------------------
-# 0. НАЛАШТУВАННЯ ТА ІНІЦІАЛІЗАЦІЯ
+# 0. НАЛАШТУВАННЯ 
 # --------------------------------------------------------
 
 root = tk.Tk()
