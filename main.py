@@ -4,7 +4,8 @@ from PIL import Image, ImageTk
 import os
 from functools import partial
 from collections import Counter
-from data import PATHS, NPC_POOL, QUESTS, RANDOM_EVENTS, CHANCE_OF_KIDNAPPING
+from data import (PATHS, NPC_POOL, QUESTS, RANDOM_EVENTS, CHANCE_OF_KIDNAPPING, 
+                  PRINCE_NAME, PRINCESS_STATUS, STORY_LOG, INVENTORY)
 
 # --------------------------------------------------------
 # 0. НАЛАШТУВАННЯ 
@@ -97,17 +98,20 @@ def show_scene(text, options):
 # 3. ФУНКЦІЇ NPC та Діалогів
 # --------------------------------------------------------
 
-def set_avatar(key):
-    global current_avatar
-    img_file = PATHS["characters"].get(key)
+def set_avatar(character_name):
+    global current_avatar_photo
+    # Отримуємо шлях до ФАЙЛУ, а не до папки
+    path = PATHS["characters"].get(character_name)
     
-    if img_file and os.path.exists(img_file):
-        img = Image.open(img_file).resize((80, 80)) 
-        current_avatar = ImageTk.PhotoImage(img)
-        avatar_label.config(image=current_avatar, text="")
+    # Перевірка: чи це дійсно шлях до файлу .png
+    if path and path.endswith(".png") and os.path.exists(path):
+        img = Image.open(path).resize((100, 100))
+        current_avatar_photo = ImageTk.PhotoImage(img)
+        avatar_label.config(image=current_avatar_photo)
     else:
-        avatar_label.config(image="", text="Аватар")
-
+        # Якщо картинки немає, просто прибираємо аватарку, щоб не було помилки
+        avatar_label.config(image="")
+        print(f"Попередження: файл для {character_name} не знайдено за шляхом {path}")
 def spawn_npc(specific_npc=None):
     global current_npc, current_npc_img
     
