@@ -4,13 +4,7 @@ from PIL import Image, ImageTk
 import os
 from functools import partial
 from collections import Counter
-
-# --- ДОДАТКОВІ ГЛОБАЛЬНІ ЗМІННІ СЮЖЕТУ ---
-PRINCESS_STATUS = "У замку" 
-PRINCE_NAME = random.choice(["Едвін", "Леон", "Валентин"])
-CHANCE_OF_KIDNAPPING = 0.6 # Ймовірність викрадення Принцеси на початку
-PRINCESS_LOCATION = "Ліс" 
-# ----------------------------------------
+from data import PATHS, NPC_POOL, QUESTS, RANDOM_EVENTS, CHANCE_OF_KIDNAPPING
 
 # --------------------------------------------------------
 # 0. НАЛАШТУВАННЯ ТА ІНІЦІАЛІЗАЦІЯ
@@ -34,114 +28,10 @@ previous_scene_func = None
 current_character_name = None
 
 # --------------------------------------------------------
-# 1. ДАНІ ГРИ
+#  ІНТЕРФЕЙС
 # --------------------------------------------------------
 
-PATHS = {
-    "characters": {
-        "Король": "king.png",
-        "Принцеса": "princess.png",
-        "Лицар": "knight.png",
-        "Принц": "npc_prince.png", 
-        "Чаклунка": "npc_witch.png", 
-        "npc_traveler": "npc_traveler.png", 
-        "npc_merchant": "npc_merchant.png",
-        "npc_shadow": "npc_shadow.png",
-        "npc_guard": "npc_guard.png"
-    },
-    "backgrounds": {
-        "start": "background_start.png",
-        "forest": "forest.png",
-        "castle": "castle.png",
-        "magic": "magic.png",
-        "swamp": "swamp.png", 
-        "dungeon": "dungeon.png"
-    }
-}
-
-# Створення фіктивних файлів, якщо вони відсутні, щоб код запускався
-def create_dummy_images():
-    if not os.path.exists("king.png"):
-        try:
-            # Створення простого білого зображення 80x80
-            dummy_img = Image.new('RGB', (80, 80), color = 'white')
-            dummy_img.save("king.png")
-            dummy_img.save("princess.png")
-            dummy_img.save("knight.png")
-            dummy_img.save("prince.png")
-            dummy_img.save("npc_witch.png")
-            dummy_img.save("npc_traveler.png")
-            dummy_img.save("npc_merchant.png")
-            dummy_img.save("npc_shadow.png")
-            dummy_img.save("npc_guard.png")
-            
-            # Створення фіктивних фонів 800x600 (сірий)
-            dummy_bg = Image.new('RGB', (800, 600), color = 'gray')
-            dummy_bg.save("background_start.png")
-            dummy_bg.save("forest.png")
-            dummy_bg.save("castle.png")
-            dummy_bg.save("magic.png")
-            dummy_bg.save("swamp.png")
-            dummy_bg.save("dungeon.png")
-        except:
-             print(" Error")
-
-create_dummy_images()
-
-
-NPC_POOL = [
-    {"name": "Старий Мандрівник", "img": PATHS["characters"]["npc_traveler"], "role": "інформатор"},
-    {"name": "Місцевий Торговець", "img": PATHS["characters"]["npc_merchant"], "role": "торговець"},
-    {"name": "Загадкова Тінь", "img": PATHS["characters"]["npc_shadow"], "role": "таємничий"},
-    {"name": "Воїн-Охоронець", "img": PATHS["characters"]["npc_guard"], "role": "охоронець"} 
-]
-
-QUESTS = {
-    "інформатор": {
-        "question": "Куди ведуть сліди, як ти думаєш?",
-        "answers": {
-            "До лісу": {"result": "Так, саме так! Тримай срібну монету.", "reward": "срібна монета"},
-            "До замку": {"result": "Ні, це хибний слід…", "reward": None}
-        }
-    },
-    "торговець": {
-        "question": "Ти хочеш купити мапу за 1 срібну монету?",
-        "answers": {
-            "Так, купити": {"result": "Дякую за покупку!", "reward": "мапа"},
-            "Ні, не треба": {"result": "Заходь ще.", "reward": None}
-        }
-    },
-    "таємничий": {
-        "question": "Що важливіше: Магія чи Сила?",
-        "answers": {
-            "Магія": {"result": "Тінь киває: 'Мудро.'", "reward": "магічний талісман"},
-            "Сила": {"result": "Тінь зникає: 'Ти ще не готовий.'", "reward": None}
-        }
-    },
-    "охоронець": {
-        "question": "Щоб пройти далі, ти повинен знати пароль. Який він?",
-        "answers": {
-            "Дракон": {"result": "Вірно! Прохід відкрито.", "reward": "ключ від підземелля"},
-            "Вовк": {"result": "Неправильно! Спробуй пізніше.", "reward": None}
-        }
-    }
-}
-
-RANDOM_EVENTS = [
-    "раптово здійнявся магічний шторм",
-    "з'явився дракон",
-    "хтось загубив таємний лист",
-    "земля загуркотіла під ногами",
-    "з-за дерев визирнула дивна тінь",
-    "вітер приніс незрозумілий шепіт"
-]
-
-
-# --------------------------------------------------------
-# 2. ФУНКЦІЇ ДЛЯ ІНТЕРФЕЙСУ (UI COMPONENTS)
-# --------------------------------------------------------
-
-# Створення елементів інтерфейсу на початку (як у оригінальному коді)
+# Створення елементів інтерфейсу на початку 
 dialog_frame = tk.Frame(main_canvas, bg="#36454F", bd=5, relief="raised")
 main_canvas.create_window(400, 300, window=dialog_frame, anchor="center")
 
@@ -196,10 +86,10 @@ def show_scene(text, options):
 
     # Додаємо кнопку "Поговорити" тільки якщо є NPC, і він не Чаклунка зі сюжету
     if current_npc and current_npc.get('role', '') in QUESTS:
-        tk.Button(buttons_frame, text="🗣️ Поговорити  (КВЕСТ)", width=40, bg="#FFC107", fg="black", 
+        tk.Button(buttons_frame, text=" Поговорити  (КВЕСТ)", width=40, bg="#FFC107", fg="black", 
                   command=talk_to_npc).pack(pady=4)
         
-    tk.Button(buttons_frame, text="🎒 Показати Інвентар", width=40, bg="#03A9F4", fg="white", 
+    tk.Button(buttons_frame, text=" Показати Інвентар", width=40, bg="#03A9F4", fg="white", 
               command=show_stats_and_inventory).pack(pady=4)
             
 
@@ -336,7 +226,7 @@ def finish_quest(role, answer):
     
     if reward:
         inventory.append(reward)
-        result_text += f"\n\n🎁 Отримана нагорода: {reward}!"
+        result_text += f"\n\n Отримана нагорода: {reward}!"
 
     despawn_npc() 
     
@@ -347,7 +237,7 @@ def finish_quest(role, answer):
 
 
 # --------------------------------------------------------
-# 4. СЦЕНИ ГРИ (Game Logic)
+# 4. СЦЕНИ ГРИ
 # --------------------------------------------------------
 
 def set_scene(scene_func, *args, **kwargs):
@@ -377,7 +267,7 @@ def show_stats_and_inventory():
         inv_text = "\n".join(inv_list)
     
     text = (
-        f"🎒 ВМІСТ ТВОГО ІНВЕНТАРЯ:\n\n"
+        f" ВМІСТ ТВОГО ІНВЕНТАРЯ:\n\n"
         f"{inv_text}"
     )
     
@@ -403,9 +293,9 @@ def start_game():
         PRINCESS_STATUS = "У замку"
         
     options = [
-        ("Вибрати Короля 👑", partial(set_scene, choose_character, "Король")),
-        ("Вибрати Принцесу 👸", partial(set_scene, choose_character, "Принцеса")),
-        ("Вибрати Лицаря ⚔️", partial(set_scene, choose_character, "Лицар"))
+        ("Вибрати Короля ", partial(set_scene, choose_character, "Король")),
+        ("Вибрати Принцесу ", partial(set_scene, choose_character, "Принцеса")),
+        ("Вибрати Лицаря ", partial(set_scene, choose_character, "Лицар"))
     ]
     show_scene(f"Вітаю! Принц {PRINCE_NAME} чекає на весілля. Принцеса: {PRINCESS_STATUS}. Вибери свого персонажа:", options)
 
@@ -434,8 +324,8 @@ def kidnapped_princess_start():
     text = "Ти прокидаєшся у дивному місці. Ти викрадена! Чаклунка, яка тебе охороняє, каже, що захищає тебе від небажаного шлюбу з Принцем."
     
     options = [
-        ("Спробувати втекти 🏃‍♀️", partial(set_scene, scene_magic_escape)),
-        ("Поговорити з Чаклункою 🗣️", partial(set_scene, talk_to_witch_princess))
+        ("Спробувати втекти ", partial(set_scene, scene_magic_escape)),
+        ("Поговорити з Чаклункою ", partial(set_scene, talk_to_witch_princess))
     ]
     show_scene(text, options)
 
@@ -455,8 +345,8 @@ def scene_forest():
     story_log.append(f"У лісі: {event}")
 
     options = [
-        ("Продовжити лісом (До Болота) 💧", partial(set_scene, scene_swamp)), 
-        ("Іти до замку 🏰", partial(set_scene, scene_castle)),
+        ("Продовжити лісом (До Болота) ", partial(set_scene, scene_swamp)), 
+        ("Іти до замку ", partial(set_scene, scene_castle)),
         ("Повернутися на старт", partial(set_scene, start_game))
     ]
     
@@ -489,8 +379,8 @@ def scene_castle():
     story_log.append(f"У замку: {event}")
 
     options = [
-        ("Спуститися у підземелля 🗝️", partial(set_scene, scene_dungeon)), 
-        ("Вийти до лісу 🌳", partial(set_scene, scene_forest)),
+        ("Спуститися у підземелля ", partial(set_scene, scene_dungeon)), 
+        ("Вийти до лісу ", partial(set_scene, scene_forest)),
         ("Повернутися на старт", partial(set_scene, start_game))
     ]
     
@@ -512,8 +402,8 @@ def scene_swamp():
     story_log.append(f"На болоті: {event}")
 
     options = [
-        ("Заглибитись у магічні руїни ✨", partial(set_scene, scene_magic)), 
-        ("Повернутися до лісу 🌳", partial(set_scene, scene_forest)),
+        ("Заглибитись у магічні руїни ", partial(set_scene, scene_magic)), 
+        ("Повернутися до лісу ", partial(set_scene, scene_forest)),
         ("Повернутися на старт", partial(set_scene, start_game))
     ]
     
@@ -529,8 +419,8 @@ def scene_dungeon():
     if "ключ від підземелля" in inventory:
         text = "Ти використовуєш ключ і відчиняєш стародавні двері. Вони ведуть до магічних руїн."
         options = [
-            ("Прямо до магії ✨", partial(set_scene, scene_magic)), 
-            ("Назад до замку 🏰", partial(set_scene, scene_castle))
+            ("Прямо до магії ", partial(set_scene, scene_magic)), 
+            ("Назад до замку ", partial(set_scene, scene_castle))
         ]
     else:
         # Примусово з'являється охоронець для квесту на ключ
@@ -541,7 +431,7 @@ def scene_dungeon():
         text = "Прохід заблоковано! Перед тобою стоїть Воїн-Охоронець. Щоб пройти, потрібен ключ."
         options = [
             ("Поговорити з охоронцем", talk_to_npc),
-            ("Назад до замку 🏰", partial(set_scene, scene_castle))
+            ("Назад до замку ", partial(set_scene, scene_castle))
         ]
         
     story_log.append(f"У підземеллі (Ключ: {'Є' if 'ключ від підземелля' in inventory else 'Немає'})")
@@ -557,7 +447,7 @@ def scene_magic():
           text_parts.append("Чаклунка охороняє Принцесу в центрі руїн!")
     
     options = [
-        ("Фіналізувати пригоду! 🏆", final_scene),
+        ("Фіналізувати пригоду! ", final_scene),
         ("Повернутися на старт", partial(set_scene, start_game))
     ]
     
@@ -634,7 +524,7 @@ def talk_to_witch_princess():
     line = random.choice(dialogues)
     
     options = [
-        ("Спробувати втекти 🏃‍♀️", partial(set_scene, scene_magic_escape)),
+        ("Спробувати втекти 🏃", partial(set_scene, scene_magic_escape)),
         ("Подумати про почуте", return_to_previous_scene)
     ]
     show_scene(f"Чаклунка каже:\n\n'{line}'", options)
@@ -672,7 +562,7 @@ def final_scene_after_rescue():
         result = "Принцеса звільнена, і історія набула щасливого кінця!"
         
     final_text = (
-        f"🎉 ФІНАЛ ПРИГОДИ! 🎉\n\n"
+        f" ФІНАЛ ПРИГОДИ! \n\n"
         f"{result}\n"
         f"Ти зібрав {len(inventory)} цінних предметів!"
     )
@@ -692,7 +582,7 @@ def final_scene():
     global story_log, inventory 
     
     final_text = (
-        f"🎉 ФІНАЛ ПРИГОДИ! 🎉\n\n"
+        f" ФІНАЛ ПРИГОДИ! \n\n"
         f"Твоя пригода завершена.\n"
         f"Ти зібрав {len(inventory)} цінних предметів!"
     )
