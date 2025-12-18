@@ -25,7 +25,7 @@ current_scene_options = []
 
 
 def init_ui():
-    """Створюємо головне вікно та всі елементи інтерфейсу."""
+    """головне вікно та всі елементи інтерфейсу."""
     global root, main_canvas, dialog_frame, text_label, avatar_label
     global npc_frame, npc_label, npc_name_label, buttons_frame
     
