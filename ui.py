@@ -122,7 +122,7 @@ def show_npc(npc_data):
         img_path = PATHS["characters"][npc_data["name"]]
     
     if img_path and os.path.exists(img_path):
-        img = Image.open(img_path).resize((60, 60))
+        img = Image.open(img_path).resize((60, 75))
         current_npc_img = ImageTk.PhotoImage(img)
         npc_label.config(image=current_npc_img, text="")
     else:

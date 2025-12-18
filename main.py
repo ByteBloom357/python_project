@@ -6,9 +6,6 @@ from data import (NPC_POOL, QUESTS, RANDOM_EVENTS, CHANCE_OF_KIDNAPPING,
 from ui import (init_ui, set_background, set_avatar, show_npc, hide_npc,
                 show_scene, add_button, start_mainloop)
 
-# --------------------------------------------------------
-# ГЛОБАЛЬНІ ЗМІННІ ЛОГІКИ ГРИ
-# --------------------------------------------------------
 
 current_npc = None
 previous_scene_func = None
@@ -19,7 +16,7 @@ PRINCESS_LOCATION = None
 
 
 # --------------------------------------------------------
-# ФУНКЦІЇ NPC ТА ДІАЛОГІВ
+# ФУНКЦІЇ  ТА ДІАЛОГ
 # --------------------------------------------------------
 
 def spawn_npc(specific_npc=None):
@@ -121,9 +118,7 @@ def finish_quest(role, answer):
     show_scene(result_text, [("Продовжити пригоду", return_to_previous_scene)])
 
 
-# --------------------------------------------------------
-# УПРАВЛІННЯ СЦЕНАМИ
-# --------------------------------------------------------
+
 
 def set_scene(scene_func, *args, **kwargs):
     global previous_scene_func
@@ -139,7 +134,6 @@ def return_to_previous_scene():
 
 
 def show_stats_and_inventory():
-    """Відображає вміст інвентаря."""
     item_counts = Counter(inventory)
     
     if not item_counts:
@@ -148,7 +142,7 @@ def show_stats_and_inventory():
         inv_list = [f"{count} x {item}" for item, count in item_counts.items()]
         inv_text = "\n".join(inv_list)
     
-    text = f"🎒 ВМІСТ ТВОГО ІНВЕНТАРЯ:\n\n{inv_text}"
+    text = f"ВМІСТ ТВОГО ІНВЕНТАРЯ:\n\n{inv_text}"
     show_scene(text, [("Назад до Пригоди", return_to_previous_scene)])
 
 
@@ -173,9 +167,9 @@ def start_game():
         PRINCESS_STATUS = "У замку"
     
     options = [
-        ("Вибрати Короля 👑", partial(set_scene, choose_character, "Король")),
-        ("Вибрати Принцесу 👸", partial(set_scene, choose_character, "Принцеса")),
-        ("Вибрати Лицаря ⚔️", partial(set_scene, choose_character, "Лицар"))
+        ("Вибрати Короля", partial(set_scene, choose_character, "Король")),
+        ("Вибрати Принцесу", partial(set_scene, choose_character, "Принцеса")),
+        ("Вибрати Лицаря", partial(set_scene, choose_character, "Лицар"))
     ]
     show_scene(f"Вітаю! Принц {PRINCE_NAME} чекає на весілля. Принцеса: {PRINCESS_STATUS}. Вибери свого персонажа:", options)
 
@@ -190,8 +184,8 @@ def choose_character(name):
         set_scene(kidnapped_princess_start)
     else:
         options = [
-            ("Іти до лісу 🌲", partial(set_scene, scene_forest)),
-            ("Іти до замку 🏰", partial(set_scene, scene_castle))
+            ("Іти до лісу", partial(set_scene, scene_forest)),
+            ("Іти до замку", partial(set_scene, scene_castle))
         ]
         show_scene("З чого почнеш пригоду?", options)
 
@@ -207,8 +201,8 @@ def kidnapped_princess_start():
         ("Вкрасти магічний амулет", scene_steal_amulet)
     ]
     show_scene(text, options)
-    add_button("🗣️ Поговорити з Чаклункою", talk_to_npc, "#FFC107", "black")
-    add_button("🎒 Показати Інвентар", show_stats_and_inventory, "#03A9F4", "white")
+    add_button("Поговорити з Чаклункою", talk_to_npc, "#FFC107", "black")
+    add_button("Показати Інвентар", show_stats_and_inventory, "#03A9F4", "white")
 
 
 def scene_secret_passage():
@@ -253,20 +247,20 @@ def scene_forest():
     story_log.append(f"У лісі: {event}")
 
     options = [
-        ("Продовжити лісом (До Болота) 🌿", partial(set_scene, scene_swamp)),
-        ("Іти до замку 🏰", partial(set_scene, scene_castle)),
+        ("Продовжити лісом (До Болота)", partial(set_scene, scene_swamp)),
+        ("Іти до замку", partial(set_scene, scene_castle)),
         ("Повернутися на старт", partial(set_scene, start_game))
     ]
     
     if PRINCESS_STATUS == "Викрадена" and PRINCESS_LOCATION == "Ліс":
-        options.insert(0, ("🔍 Шукати схованку Принцеси", partial(set_scene, scene_rescue_attempt)))
+        options.insert(0, ("Шукати схованку Принцеси", partial(set_scene, scene_rescue_attempt)))
 
     show_scene(" ".join(text_parts), options)
     
     if current_npc and current_npc.get('role', '') in QUESTS:
-        add_button("🗣️ Поговорити (КВЕСТ)", talk_to_npc, "#FFC107", "black")
+        add_button("Поговорити (КВЕСТ)", talk_to_npc, "#FFC107", "black")
     
-    add_button("🎒 Показати Інвентар", show_stats_and_inventory, "#03A9F4", "white")
+    add_button("Показати Інвентар", show_stats_and_inventory, "#03A9F4", "white")
 
 
 def scene_castle():
@@ -290,17 +284,17 @@ def scene_castle():
     story_log.append(f"У замку: {event}")
 
     options = [
-        ("Спуститися у підземелля 🕳️", partial(set_scene, scene_dungeon)),
-        ("Вийти до лісу 🌲", partial(set_scene, scene_forest)),
+        ("Спуститися у підземелля", partial(set_scene, scene_dungeon)),
+        ("Вийти до лісу", partial(set_scene, scene_forest)),
         ("Повернутися на старт", partial(set_scene, start_game))
     ]
     
     show_scene(" ".join(text_parts), options)
     
     if current_npc and current_npc.get('role', '') in QUESTS:
-        add_button("🗣️ Поговорити (КВЕСТ)", talk_to_npc, "#FFC107", "black")
+        add_button("Поговорити (КВЕСТ)", talk_to_npc, "#FFC107", "black")
     
-    add_button("🎒 Показати Інвентар", show_stats_and_inventory, "#03A9F4", "white")
+    add_button("Показати Інвентар", show_stats_and_inventory, "#03A9F4", "white")
 
 
 def scene_swamp():
@@ -319,20 +313,20 @@ def scene_swamp():
     story_log.append(f"На болоті: {event}")
 
     options = [
-        ("Заглибитись у магічні руїни ✨", partial(set_scene, scene_magic)),
-        ("Повернутися до лісу 🌲", partial(set_scene, scene_forest)),
+        ("Заглибитись у магічні руїни", partial(set_scene, scene_magic)),
+        ("Повернутися до лісу", partial(set_scene, scene_forest)),
         ("Повернутися на старт", partial(set_scene, start_game))
     ]
     
     if PRINCESS_STATUS == "Викрадена" and PRINCESS_LOCATION == "Болото":
-        options.insert(0, ("🔍 Шукати схованку Принцеси", partial(set_scene, scene_rescue_attempt)))
+        options.insert(0, ("Шукати схованку Принцеси", partial(set_scene, scene_rescue_attempt)))
     
     show_scene(" ".join(text_parts), options)
     
     if current_npc and current_npc.get('role', '') in QUESTS:
-        add_button("🗣️ Поговорити (КВЕСТ)", talk_to_npc, "#FFC107", "black")
+        add_button("Поговорити (КВЕСТ)", talk_to_npc, "#FFC107", "black")
     
-    add_button("🎒 Показати Інвентар", show_stats_and_inventory, "#03A9F4", "white")
+    add_button("Показати Інвентар", show_stats_and_inventory, "#03A9F4", "white")
 
 
 def scene_dungeon():
@@ -342,8 +336,8 @@ def scene_dungeon():
     if "ключ від підземелля" in inventory:
         text = "Ти використовуєш ключ і відчиняєш стародавні двері. Вони ведуть до магічних руїн."
         options = [
-            ("Прямо до магії ✨", partial(set_scene, scene_magic)),
-            ("Назад до замку 🏰", partial(set_scene, scene_castle))
+            ("Прямо до магії", partial(set_scene, scene_magic)),
+            ("Назад до замку", partial(set_scene, scene_castle))
         ]
     else:
         npc_guard = next((n for n in NPC_POOL if n['role'] == "охоронець"), None)
@@ -352,16 +346,16 @@ def scene_dungeon():
         
         text = "Прохід заблоковано! Перед тобою стоїть Воїн-Охоронець. Щоб пройти, потрібен ключ."
         options = [
-            ("Назад до замку 🏰", partial(set_scene, scene_castle))
+            ("Назад до замку", partial(set_scene, scene_castle))
         ]
     
     story_log.append(f"У підземеллі (Ключ: {'Є' if 'ключ від підземелля' in inventory else 'Немає'})")
     show_scene(text, options)
     
     if current_npc and current_npc.get('role', '') in QUESTS:
-        add_button("🗣️ Поговорити з охоронцем", talk_to_npc, "#FFC107", "black")
+        add_button("Поговорити з охоронцем", talk_to_npc, "#FFC107", "black")
     
-    add_button("🎒 Показати Інвентар", show_stats_and_inventory, "#03A9F4", "white")
+    add_button("Показати Інвентар", show_stats_and_inventory, "#03A9F4", "white")
 
 
 def scene_magic():
@@ -374,12 +368,12 @@ def scene_magic():
         text_parts.append("Чаклунка охороняє Принцесу в центрі руїн!")
     
     options = [
-        ("⭐ Фіналізувати пригоду!", final_scene),
+        ("Фіналізувати пригоду!", final_scene),
         ("Повернутися на старт", partial(set_scene, start_game))
     ]
     
     if PRINCESS_STATUS == "Викрадена" and PRINCESS_LOCATION == "Магічні руїни":
-        options.insert(0, ("🔍 Шукати схованку Принцеси", partial(set_scene, scene_rescue_attempt)))
+        options.insert(0, ("Шукати схованку Принцеси", partial(set_scene, scene_rescue_attempt)))
 
     story_log.append("Ти потрапив у магічне місце")
     show_scene(" ".join(text_parts), options)
@@ -400,8 +394,8 @@ def scene_rescue_attempt():
     magic_power = random.randint(1, 10)
     
     options = [
-        ("💬 Спробувати домовитися", partial(set_scene, scene_rescue_talk, magic_power)),
-        ("⚔️ Спробувати силою відібрати Принцесу", partial(set_scene, scene_rescue_fight, magic_power))
+        ("Спробувати домовитися", partial(set_scene, scene_rescue_talk, magic_power)),
+        ("Спробувати силою відібрати Принцесу", partial(set_scene, scene_rescue_fight, magic_power))
     ]
     
     show_scene(text, options)
@@ -452,7 +446,7 @@ def final_scene_after_rescue():
         result = "Принцеса звільнена, і історія набула щасливого кінця!"
     
     final_text = (
-        f"🎉 ФІНАЛ ПРИГОДИ! 🎉\n\n"
+        f"ФІНАЛ ПРИГОДИ!\n\n"
         f"{result}\n"
         f"Ти зібрав {len(inventory)} цінних предметів!"
     )
@@ -460,16 +454,15 @@ def final_scene_after_rescue():
     story_log = []
     inventory = []
     
-    show_scene(final_text, [("🔄 Грати знову", start_game)])
+    show_scene(final_text, [("Грати знову", start_game)])
 
 
 def final_scene():
-    """Початкова фінальна сцена, якщо гра не стосувалася порятунку."""
     global story_log, inventory
     despawn_npc()
     
     final_text = (
-        f"🎉 ФІНАЛ ПРИГОДИ! 🎉\n\n"
+        f"ФІНАЛ ПРИГОДИ!\n\n"
         f"Твоя пригода завершена.\n"
         f"Ти зібрав {len(inventory)} цінних предметів!"
     )
@@ -477,12 +470,9 @@ def final_scene():
     story_log = []
     inventory = []
     
-    show_scene(final_text, [("🔄 Грати знову", start_game)])
+    show_scene(final_text, [("Грати знову", start_game)])
 
 
-# --------------------------------------------------------
-# ЗАПУСК ГРИ
-# --------------------------------------------------------
 
 if __name__ == "__main__":
     init_ui()
