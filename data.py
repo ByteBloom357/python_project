@@ -1,6 +1,5 @@
 import random
 
-#ГЛОБАЛЬНІ НАЛАШТУВАННЯ ТА СЮЖЕТ
  
 CHANCE_OF_KIDNAPPING = 0.9
 PRINCE_NAME = "Артур"

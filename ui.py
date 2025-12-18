@@ -23,12 +23,9 @@ current_bg_photo = None
 current_scene_options = []
 
 
-# --------------------------------------------------------
-# ІНІЦІАЛІЗАЦІЯ ІНТЕРФЕЙСУ
-# --------------------------------------------------------
 
 def init_ui():
-    """Створює головне вікно та всі елементи інтерфейсу."""
+    """Створюємо головне вікно та всі елементи інтерфейсу."""
     global root, main_canvas, dialog_frame, text_label, avatar_label
     global npc_frame, npc_label, npc_name_label, buttons_frame
     
@@ -63,9 +60,6 @@ def init_ui():
     buttons_frame.pack(pady=10, padx=10)
 
 
-# --------------------------------------------------------
-# РОБОТА З ФОНОМ
-# --------------------------------------------------------
 
 def set_background(key):
     """Встановлює фонове зображення за ключем."""
@@ -87,9 +81,7 @@ def set_background(key):
         main_canvas.itemconfig("background_image", image=current_bg_photo)
 
 
-# --------------------------------------------------------
-# РОБОТА З АВАТАРОМ ГРАВЦЯ
-# --------------------------------------------------------
+
 
 def set_avatar(character_name):
     """Встановлює аватар персонажа гравця."""
@@ -106,12 +98,9 @@ def set_avatar(character_name):
         print(f"Попередження: файл для {character_name} не знайдено за шляхом {path}")
 
 
-# --------------------------------------------------------
-# РОБОТА З NPC
-# --------------------------------------------------------
 
 def show_npc(npc_data):
-    """Відображає NPC на екрані."""
+   
     global current_npc_img
     
     npc_name_label.config(text=f"{npc_data['name']} ({npc_data.get('role', '')})")
@@ -122,7 +111,7 @@ def show_npc(npc_data):
         img_path = PATHS["characters"][npc_data["name"]]
     
     if img_path and os.path.exists(img_path):
-        img = Image.open(img_path).resize((60, 75))
+        img = Image.open(img_path).resize((70, 80))
         current_npc_img = ImageTk.PhotoImage(img)
         npc_label.config(image=current_npc_img, text="")
     else:
@@ -137,9 +126,6 @@ def hide_npc():
     npc_name_label.config(text="")
 
 
-# --------------------------------------------------------
-# ВІДОБРАЖЕННЯ СЦЕН
-# --------------------------------------------------------
 
 def show_scene(text, options):
     """Відображає сцену з текстом та опціями."""
@@ -162,10 +148,5 @@ def add_button(text, callback, bg_color="#4CAF50", fg_color="white"):
              font=("Arial", 10, "bold"), command=callback).pack(pady=4)
 
 
-# --------------------------------------------------------
-# ЗАПУСК
-# --------------------------------------------------------
-
 def start_mainloop():
-    """Запускає головний цикл Tkinter."""
     root.mainloop()
