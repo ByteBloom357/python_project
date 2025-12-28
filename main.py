@@ -9,6 +9,7 @@ from ui import (init_ui, set_background, set_avatar, show_npc, hide_npc,
 
 current_npc = None
 previous_scene_func = None
+current_scene_func = None
 current_character_name = None
 inventory = []
 story_log = []
@@ -16,7 +17,7 @@ PRINCESS_LOCATION = None
 
 
 # --------------------------------------------------------
-# ФУНКЦІЇ  ТА ДІАЛОГ
+# ФУНКЦІЇ ТРИГЕРУ
 # --------------------------------------------------------
 
 def spawn_npc(specific_npc=None):
@@ -48,13 +49,13 @@ def talk_to_npc():
 
     dialogues = [
         "Я бачив сліди, що вели до північного лісу.",
-        "Якщо бажаєш допомоги — знайди рідкісну траву.",
-        "У мене є корисні дрібниці — за золото, звісно.",
-        "Не заважай мені! Я охороняю цей прохід."
+        "Якщо бажаєш допомоги – знайди рідкісну траву.",
+        "У мене є корисні дрібниці – за золото, звісно.",
+        "Не заважай мені! Я охороню цей прохід."
     ]
     
     if current_npc['name'] == PRINCE_NAME:
-        line = f"Моя Принцеса має бути зі мною, а не з якимось там... {current_character_name}!"
+        line = f"Моя Принцеса має бути зі мною, а не з кимось там... {current_character_name}!"
     elif current_npc['name'] == "Король":
         line = "Я вирішую, хто буде моїм зятем! Не заважай моїм планам."
     elif current_npc['name'] == "Чаклунка":
@@ -118,23 +119,22 @@ def finish_quest(role, answer):
     show_scene(result_text, [("Продовжити пригоду", return_to_previous_scene)])
 
 
-
-
 def set_scene(scene_func, *args, **kwargs):
-    global previous_scene_func
-    previous_scene_func = partial(scene_func, *args, **kwargs)
+    global previous_scene_func, current_scene_func
+    previous_scene_func = current_scene_func
+    current_scene_func = partial(scene_func, *args, **kwargs)
     scene_func(*args, **kwargs)
 
 
 def return_to_previous_scene():
     if previous_scene_func:
-        previous_scene_func()
+        set_scene(previous_scene_func.func, *previous_scene_func.args, **previous_scene_func.keywords)
     else:
         start_game()
 
 
 def show_stats_and_inventory():
-    item_counts = Counter(inventory)
+    item_counts = Counter(inventory) 
     
     if not item_counts:
         inv_text = "(порожньо)"
@@ -214,7 +214,7 @@ def scene_secret_passage():
     options = [
         ("Йти на світло (до Замку)", partial(set_scene, scene_castle)),
         ("Йти в глибину (до Болота)", partial(set_scene, scene_swamp)),
-        ("Повернутися в кімнату", partial(set_scene, kidnapped_princess_start))
+        ("Повернутись в кімнату", partial(set_scene, kidnapped_princess_start))
     ]
     show_scene(text, options)
 
@@ -249,7 +249,7 @@ def scene_forest():
     options = [
         ("Продовжити лісом (До Болота)", partial(set_scene, scene_swamp)),
         ("Іти до замку", partial(set_scene, scene_castle)),
-        ("Повернутися на старт", partial(set_scene, start_game))
+        ("Повернутись на старт", partial(set_scene, start_game))
     ]
     
     if PRINCESS_STATUS == "Викрадена" and PRINCESS_LOCATION == "Ліс":
@@ -271,7 +271,7 @@ def scene_castle():
     text_parts = [f"Ти у замку, і {event}."]
     
     if PRINCESS_STATUS == "У замку":
-        text_parts.append(f"Король свариться з Принцем {PRINCE_NAME} через весілля.")
+        text_parts.append(f"Король сваритться з Принцем {PRINCE_NAME} через весілля.")
         
         if current_character_name != "Король":
             spawn_npc({"name": "Король", "img": None, "role": "Король"})
@@ -284,9 +284,9 @@ def scene_castle():
     story_log.append(f"У замку: {event}")
 
     options = [
-        ("Спуститися у підземелля", partial(set_scene, scene_dungeon)),
+        ("Спуститись у підземелля", partial(set_scene, scene_dungeon)),
         ("Вийти до лісу", partial(set_scene, scene_forest)),
-        ("Повернутися на старт", partial(set_scene, start_game))
+        ("Повернутись на старт", partial(set_scene, start_game))
     ]
     
     show_scene(" ".join(text_parts), options)
@@ -314,8 +314,8 @@ def scene_swamp():
 
     options = [
         ("Заглибитись у магічні руїни", partial(set_scene, scene_magic)),
-        ("Повернутися до лісу", partial(set_scene, scene_forest)),
-        ("Повернутися на старт", partial(set_scene, start_game))
+        ("Повернутись до лісу", partial(set_scene, scene_forest)),
+        ("Повернутись на старт", partial(set_scene, start_game))
     ]
     
     if PRINCESS_STATUS == "Викрадена" and PRINCESS_LOCATION == "Болото":
@@ -369,7 +369,7 @@ def scene_magic():
     
     options = [
         ("Фіналізувати пригоду!", final_scene),
-        ("Повернутися на старт", partial(set_scene, start_game))
+        ("Повернутись на старт", partial(set_scene, start_game))
     ]
     
     if PRINCESS_STATUS == "Викрадена" and PRINCESS_LOCATION == "Магічні руїни":
@@ -394,7 +394,7 @@ def scene_rescue_attempt():
     magic_power = random.randint(1, 10)
     
     options = [
-        ("Спробувати домовитися", partial(set_scene, scene_rescue_talk, magic_power)),
+        ("Спробувати домовитись", partial(set_scene, scene_rescue_talk, magic_power)),
         ("Спробувати силою відібрати Принцесу", partial(set_scene, scene_rescue_fight, magic_power))
     ]
     
@@ -439,7 +439,7 @@ def final_scene_after_rescue():
     if current_character_name == "Лицар":
         result = "Ти, Лицар, привів Принцесу до замку, і Король не зміг заперечити твоїй доблесті. Принц залишився ні з чим!"
     elif current_character_name == "Принцеса":
-        result = "Ти, Принцеса, повернулася на власних умовах, оголосивши батькові, що сама обереш свою долю."
+        result = "Ти, Принцеса, повернулась на власних умовах, оголосивши батькові, що сама обереш свою долю."
     elif current_character_name == "Король":
         result = "Ти, Король, мудро (чи ні) вирішив, що шлюб по любові краще, ніж викрадення та скандал. Але Принца доведеться втішати."
     else:
@@ -471,7 +471,6 @@ def final_scene():
     inventory = []
     
     show_scene(final_text, [("Грати знову", start_game)])
-
 
 
 if __name__ == "__main__":
